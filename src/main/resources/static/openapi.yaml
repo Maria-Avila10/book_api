@@ -1,0 +1,170 @@
+openapi: 3.0.1
+info:
+  title: Book API
+  version: 1.0.0
+  description: API REST para la gestión de libros
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor local para desarrollo
+
+paths:
+  /books:
+    get:
+      summary: Devuelve todos los libros
+      description: |
+        a. Dado que el usuario envíe una solicitud GET a la ruta `/books`.  
+        b. Cuando el sistema recibe la solicitud, debe devolver una lista de todos los libros registrados.
+      operationId: getAllBooks
+      tags:
+        - books
+      responses:
+        '200':
+          description: Lista de libros
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+    post:
+      summary: Agrega un nuevo libro
+      description: |
+        a. Dado que el usuario envíe una solicitud POST con los datos de un nuevo libro en el cuerpo de la petición.  
+        b. Cuando el sistema recibe la solicitud, debe validar el ISBN utilizando OpenLibrary.org. Si el ISBN no es válido, debe rechazar la solicitud con un error 400.  
+        c. Si el ISBN es válido (o está ausente), debe registrar el nuevo libro y devolver el libro creado con su ID asignado y la URL de OpenLibrary.
+      operationId: addBook
+      tags:
+        - books
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+      responses:
+        '201':
+          description: Libro creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: ISBN inválido o no encontrado en OpenLibrary
+
+  /books/{id}:
+    get:
+      summary: Devuelve un libro por ID
+      description: |
+        a. Dado que el usuario envíe una solicitud GET a la ruta `/books/{id}`.  
+        b. Cuando el sistema recibe la solicitud, debe devolver el libro con el ID especificado (200 OK), o un error 404 si no existe.
+      operationId: getBookById
+      tags:
+        - books
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Libro encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Libro no encontrado
+
+    put:
+      summary: Actualiza un libro existente por ID
+      description: |
+        a. Dado que el usuario envíe una solicitud PUT con los nuevos datos del libro a la ruta `/books/{id}`.  
+        b. El sistema debe validar el ISBN utilizando OpenLibrary.org. Si el ISBN no es válido, debe rechazar la solicitud con un error 400.  
+        c. Si el libro existe, debe actualizarlo y devolver el objeto actualizado, o un error 404 si no existe.
+      operationId: updateBook
+      tags:
+        - books
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+      responses:
+        '200':
+          description: Libro actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: ISBN inválido o no encontrado en OpenLibrary
+        '404':
+          description: Libro no encontrado
+
+    delete:
+      summary: Elimina un libro por ID
+      description: |
+        a. Dado que el usuario envíe una solicitud DELETE a la ruta `/books/{id}`.  
+        b. Cuando el sistema recibe la solicitud, debe eliminar el libro con el ID especificado y devolver un estado 204 si la eliminación fue exitosa, o un error 404 si el libro no existe.
+      operationId: deleteBook
+      tags:
+        - books
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Libro eliminado exitosamente
+        '404':
+          description: Libro no encontrado
+
+components:
+  schemas:
+    BookRequest:
+      type: object
+      required:
+        - title
+        - author
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        isbn:
+          type: string
+          description: Debe ser un ISBN válido y existente en OpenLibrary
+        year:
+          type: integer
+          description: Año de publicación
+
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        author:
+          type: string
+        isbn:
+          type: string
+          description: Debe ser un ISBN válido y existente en OpenLibrary
+        year:
+          type: integer
+          description: Año de publicación
+        url:
+          type: string
+          description: URL de OpenLibrary para consultar el libro
