@@ -1,89 +1,95 @@
 package com.example.book_api.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import com.example.book_api.model.BookEntity;
+import com.example.book_api.repository.BookRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/books")
 public class BooksController {
 
-    @Autowired
-    private JdbcTemplate jdbc;
+    private final BookRepository bookRepository;
+    private final RestTemplate restTemplate = new RestTemplate(); // 👈 Directamente en el Controller
 
-    private boolean isValidIsbn(String isbn) {
-        try {
-            String url = "https://openlibrary.org/isbn/" + isbn + ".json";
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            return response.getStatusCode() == HttpStatus.OK;
-        } catch (Exception e) {
-            return false;
-        }
+    public BooksController(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllBooks() {
-        var books = jdbc.queryForList("SELECT * FROM book");
-        return ResponseEntity.ok(books);
+    public List<BookEntity> getAllBooks() {
+        return bookRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getBookById(@PathVariable Long id) {
-        var books = jdbc.queryForList("SELECT * FROM book WHERE id = ?", id);
-        if (books.isEmpty()) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(books.get(0));
+    public ResponseEntity<BookEntity> getBookById(@PathVariable Integer id) {
+        Optional<BookEntity> book = bookRepository.findById(id);
+        return book.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createBook(@RequestBody Map<String, Object> book) {
-        String isbn = (String) book.get("isbn");
-        if (isbn != null && !isValidIsbn(isbn)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "ISBN inválido"));
+    public BookEntity createBook(@RequestBody BookEntity book) {
+        // 1. Consultar la API de OpenLibrary con el ISBN recibido
+        if (book.getIsbn() != null && !book.getIsbn().isEmpty()) {
+            String apiUrl = "https://openlibrary.org/api/books?bibkeys=ISBN:" + book.getIsbn() + "&format=json&jscmd=data";
+
+            try {
+                Map<String, Object> response = restTemplate.getForObject(apiUrl, Map.class);
+
+                if (response != null && !response.isEmpty()) {
+                    String key = "ISBN:" + book.getIsbn();
+                    Map<String, Object> bookData = (Map<String, Object>) response.get(key);
+
+                    if (bookData != null && bookData.get("url") != null) {
+                        String url = "https://openlibrary.org" + (String) bookData.get("url");
+                        book.setUrl(url);
+                    } else {
+                        book.setUrl("URL no disponible");
+                    }
+                } else {
+                    book.setUrl("URL no disponible");
+                }
+            } catch (Exception e) {
+                book.setUrl("URL no disponible");
+            }
+        } else {
+            book.setUrl("ISBN no proporcionado");
         }
 
-        jdbc.update(
-                "INSERT INTO book(title, author, isbn, published_year, url) VALUES(?, ?, ?, ?, ?)",
-                book.get("title"),
-                book.get("author"),
-                isbn,
-                book.get("published_year"),
-                isbn != null ? "https://openlibrary.org/isbn/" + isbn + ".json" : null
-        );
-
-        Long id = jdbc.queryForObject("SELECT MAX(id) FROM book", Long.class);
-        return getBookById(id);
+        // 2. Guardar el libro en la base de datos
+        return bookRepository.save(book);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateBook(@PathVariable Long id, @RequestBody Map<String, Object> book) {
-        String isbn = (String) book.get("isbn");
-        if (isbn != null && !isValidIsbn(isbn)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "ISBN inválido"));
+    public ResponseEntity<BookEntity> updateBook(@PathVariable Integer id, @RequestBody BookEntity updatedBook) {
+        Optional<BookEntity> optionalBook = bookRepository.findById(id);
+        if (optionalBook.isPresent()) {
+            BookEntity book = optionalBook.get();
+            book.setTitle(updatedBook.getTitle());
+            book.setAuthor(updatedBook.getAuthor());
+            book.setIsbn(updatedBook.getIsbn());
+            book.setPublishedYear(updatedBook.getPublishedYear());
+            book.setUrl(updatedBook.getUrl());
+
+            return ResponseEntity.ok(bookRepository.save(book));
+        } else {
+            return ResponseEntity.notFound().build();
         }
-
-        int rows = jdbc.update(
-                "UPDATE book SET title = ?, author = ?, isbn = ?, published_year = ?, url = ? WHERE id = ?",
-                book.get("title"),
-                book.get("author"),
-                isbn,
-                book.get("published_year"),
-                isbn != null ? "https://openlibrary.org/isbn/" + isbn + ".json" : null,
-                id
-        );
-
-        if (rows == 0) return ResponseEntity.notFound().build();
-        return getBookById(id);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
-        int rows = jdbc.update("DELETE FROM book WHERE id = ?", id);
-        return rows > 0 ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteBook(@PathVariable Integer id) {
+        if (bookRepository.existsById(id)) {
+            bookRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

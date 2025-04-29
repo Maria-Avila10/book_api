@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <!-- Tabla BOOK -->
+    <changeSet id="1" author="xime">
+        <comment>Tabla de libros con validación de ISBN usando OpenLibrary</comment>
+        <createTable tableName="book">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="isbn" type="VARCHAR(13)"/>
+            <column name="published_year" type="INT"/>
+            <column name="url" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Secuencias para Spring Batch -->
+    <changeSet id="2" author="xime">
+        <sql>
+            CREATE SEQUENCE BATCH_JOB_SEQ START WITH 1;
+            CREATE SEQUENCE BATCH_JOB_INSTANCE_SEQ START WITH 1;
+            CREATE SEQUENCE BATCH_JOB_EXECUTION_SEQ START WITH 1;
+            CREATE SEQUENCE BATCH_STEP_EXECUTION_SEQ START WITH 1;
+        </sql>
+    </changeSet>
+
+    <!-- Tablas de Spring Batch -->
+    <changeSet id="3" author="xime">
+        <createTable tableName="BATCH_JOB_INSTANCE">
+            <column name="JOB_INSTANCE_ID" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT"/>
+            <column name="JOB_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="JOB_KEY" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="4" author="xime">
+        <createTable tableName="BATCH_JOB_EXECUTION">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT"/>
+            <column name="JOB_INSTANCE_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="START_TIME" type="TIMESTAMP"/>
+            <column name="END_TIME" type="TIMESTAMP"/>
+            <column name="STATUS" type="VARCHAR(10)"/>
+            <column name="EXIT_CODE" type="VARCHAR(2500)"/>
+            <column name="EXIT_MESSAGE" type="VARCHAR(2500)"/>
+            <column name="LAST_UPDATED" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="5" author="xime">
+        <addForeignKeyConstraint
+                baseTableName="BATCH_JOB_EXECUTION"
+                baseColumnNames="JOB_INSTANCE_ID"
+                referencedTableName="BATCH_JOB_INSTANCE"
+                referencedColumnNames="JOB_INSTANCE_ID"
+                constraintName="FK_JOB_EXECUTION_INSTANCE"/>
+    </changeSet>
+
+    <changeSet id="6" author="xime">
+        <createTable tableName="BATCH_JOB_EXECUTION_PARAMS">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PARAMETER_TYPE" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PARAMETER_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PARAMETER_VALUE" type="VARCHAR(250)"/>
+            <column name="DATE_VAL" type="TIMESTAMP"/>
+            <column name="LONG_VAL" type="BIGINT"/>
+            <column name="DOUBLE_VAL" type="DOUBLE"/>
+            <column name="IDENTIFYING" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+
+    <changeSet id="7" author="xime">
+        <addForeignKeyConstraint
+                baseTableName="BATCH_JOB_EXECUTION_PARAMS"
+                baseColumnNames="JOB_EXECUTION_ID"
+                referencedTableName="BATCH_JOB_EXECUTION"
+                referencedColumnNames="JOB_EXECUTION_ID"
+                constraintName="FK_JOB_EXECUTION_PARAMS_EXECUTION"/>
+    </changeSet>
+
+    <changeSet id="8" author="xime">
+        <createTable tableName="BATCH_STEP_EXECUTION">
+            <column name="STEP_EXECUTION_ID" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT"/>
+            <column name="STEP_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="START_TIME" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="END_TIME" type="TIMESTAMP"/>
+            <column name="STATUS" type="VARCHAR(10)"/>
+            <column name="COMMIT_COUNT" type="BIGINT"/>
+            <column name="READ_COUNT" type="BIGINT"/>
+            <column name="FILTER_COUNT" type="BIGINT"/>
+            <column name="WRITE_COUNT" type="BIGINT"/>
+            <column name="READ_SKIP_COUNT" type="BIGINT"/>
+            <column name="WRITE_SKIP_COUNT" type="BIGINT"/>
+            <column name="PROCESS_SKIP_COUNT" type="BIGINT"/>
+            <column name="ROLLBACK_COUNT" type="BIGINT"/>
+            <column name="EXIT_CODE" type="VARCHAR(2500)"/>
+            <column name="EXIT_MESSAGE" type="VARCHAR(2500)"/>
+            <column name="LAST_UPDATED" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="9" author="xime">
+        <addForeignKeyConstraint
+                baseTableName="BATCH_STEP_EXECUTION"
+                baseColumnNames="JOB_EXECUTION_ID"
+                referencedTableName="BATCH_JOB_EXECUTION"
+                referencedColumnNames="JOB_EXECUTION_ID"
+                constraintName="FK_STEP_EXECUTION_JOB_EXECUTION"/>
+    </changeSet>
+
+    <changeSet id="10" author="xime">
+        <createTable tableName="BATCH_JOB_EXECUTION_CONTEXT">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="SHORT_CONTEXT" type="VARCHAR(2500)"/>
+            <column name="SERIALIZED_CONTEXT" type="CLOB"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="11" author="xime">
+        <createTable tableName="BATCH_STEP_EXECUTION_CONTEXT">
+            <column name="STEP_EXECUTION_ID" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="SHORT_CONTEXT" type="VARCHAR(2500)"/>
+            <column name="SERIALIZED_CONTEXT" type="CLOB"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
