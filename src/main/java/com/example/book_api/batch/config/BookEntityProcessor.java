@@ -6,7 +6,7 @@ import org.springframework.batch.item.ItemProcessor;
 public class BookEntityProcessor implements ItemProcessor<BookEntity, BookEntity> {
     @Override
     public BookEntity process(BookEntity book) throws Exception {
-        // Procesa el libro si es necesario (por ejemplo, valida o transforma datos)
+        // Procesa el libro si es necesario (por ejemplo, válida o transforma datos)
         return book;
     }
 }

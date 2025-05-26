@@ -1,92 +1,90 @@
 package com.example.book_api.controller;
 
+import com.example.book_api.api.BooksApi;
+import com.example.book_api.model.Book;
 import com.example.book_api.model.BookEntity;
-import com.example.book_api.repository.BookRepository;
+import com.example.book_api.service.BookService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/books")
-public class BooksController {
+public class BooksController implements BooksApi {
 
-    private final BookRepository bookRepository;
-    private final RestTemplate restTemplate = new RestTemplate(); // 👈 Directamente en el Controller
+    private final BookService bookService;
 
-    public BooksController(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
+    public BooksController(BookService bookService) {
+        this.bookService = bookService;
     }
 
-    @GetMapping
-    public List<BookEntity> getAllBooks() {
-        return bookRepository.findAll();
+    private Book toDto(BookEntity entity) {
+        Book dto = new Book();
+        dto.setId(entity.getId());
+        dto.setTitle(entity.getTitle());
+        dto.setAuthor(entity.getAuthor());
+        dto.setIsbn(entity.getIsbn());
+        return dto;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BookEntity> getBookById(@PathVariable Integer id) {
-        Optional<BookEntity> book = bookRepository.findById(id);
-        return book.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    private BookEntity toEntity(Book dto) {
+        BookEntity entity = new BookEntity();
+        entity.setTitle(dto.getTitle());
+        entity.setAuthor(dto.getAuthor());
+        entity.setIsbn(dto.getIsbn());
+        return entity;
     }
 
-    @PostMapping
-    public BookEntity createBook(@RequestBody BookEntity book) {
-        // 1. Consultar la API de OpenLibrary con el ISBN recibido
-        if (book.getIsbn() != null && !book.getIsbn().isEmpty()) {
-            String apiUrl = "https://openlibrary.org/api/books?bibkeys=ISBN:" + book.getIsbn() + "&format=json&jscmd=data";
-
-            try {
-                Map<String, Object> response = restTemplate.getForObject(apiUrl, Map.class);
-
-                if (response != null && !response.isEmpty()) {
-                    String key = "ISBN:" + book.getIsbn();
-                    Map<String, Object> bookData = (Map<String, Object>) response.get(key);
-
-                    if (bookData != null && bookData.get("url") != null) {
-                        String url = "https://openlibrary.org" + (String) bookData.get("url");
-                        book.setUrl(url);
-                    } else {
-                        book.setUrl("URL no disponible");
-                    }
-                } else {
-                    book.setUrl("URL no disponible");
-                }
-            } catch (Exception e) {
-                book.setUrl("URL no disponible");
-            }
-        } else {
-            book.setUrl("ISBN no proporcionado");
-        }
-
-        // 2. Guardar el libro en la base de datos
-        return bookRepository.save(book);
+    @Override
+    public ResponseEntity<List<Book>> getAllBooks() {
+        List<Book> books = bookService.findAllBooks()
+                .stream()
+                .map(this::toDto)
+                .toList();
+        return ResponseEntity.ok(books);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<BookEntity> updateBook(@PathVariable Integer id, @RequestBody BookEntity updatedBook) {
-        Optional<BookEntity> optionalBook = bookRepository.findById(id);
-        if (optionalBook.isPresent()) {
-            BookEntity book = optionalBook.get();
-            book.setTitle(updatedBook.getTitle());
-            book.setAuthor(updatedBook.getAuthor());
-            book.setIsbn(updatedBook.getIsbn());
-            book.setPublishedYear(updatedBook.getPublishedYear());
-            book.setUrl(updatedBook.getUrl());
+    public ResponseEntity<Book> getBookById(Integer id) {
+        return bookService.findBookById(id)
+                .map(this::toDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-            return ResponseEntity.ok(bookRepository.save(book));
-        } else {
+
+    @Override
+    public ResponseEntity<List<Book>> getBooksearchText(String texto) {
+        List<Book> results = bookService.searchBooks(texto)
+                .stream()
+                .map(this::toDto)
+                .toList();
+        return ResponseEntity.ok(results);
+    }
+
+
+    @Override
+    public ResponseEntity<Book> createBook(Book bookDto) {
+        BookEntity entity = toEntity(bookDto);
+        BookEntity saved = bookService.createBook(entity);
+        return ResponseEntity.ok(toDto(saved));
+    }
+
+
+    @Override
+    public ResponseEntity<Book> updateBook(Integer id, Book bookDto) {
+        BookEntity entity = toEntity(bookDto);
+        try {
+            BookEntity updated = bookService.updateBook(id, entity);
+            return ResponseEntity.ok(toDto(updated));
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBook(@PathVariable Integer id) {
-        if (bookRepository.existsById(id)) {
-            bookRepository.deleteById(id);
+
+    @Override
+    public ResponseEntity<Void> deleteBook(Integer id) {
+        if (bookService.deleteBook(id)) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();

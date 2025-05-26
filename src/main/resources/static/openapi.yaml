@@ -13,7 +13,8 @@ paths:
     get:
       summary: Devuelve todos los libros
       description: |
-        a. Dado que el usuario envíe una solicitud GET a la ruta `/books`.  
+        a. Dado que el usuario envíe una solicitud GET a la ruta `/books`.
+
         b. Cuando el sistema recibe la solicitud, debe devolver una lista de todos los libros registrados.
       operationId: getAllBooks
       tags:
@@ -31,9 +32,11 @@ paths:
     post:
       summary: Agrega un nuevo libro
       description: |
-        a. Dado que el usuario envíe una solicitud POST con los datos de un nuevo libro en el cuerpo de la petición.  
-        b. Cuando el sistema recibe la solicitud, debe validar el ISBN utilizando OpenLibrary.org. Si el ISBN no es válido, debe rechazar la solicitud con un error 400.  
-        c. Si el ISBN es válido (o está ausente), debe registrar el nuevo libro y devolver el libro creado con su ID asignado y la URL de OpenLibrary.
+        a. Dado que el usuario envíe una solicitud POST con los datos de un nuevo libro en el cuerpo de la petición.
+
+        b. Cuando el sistema recibe la solicitud, debe validar el ISBN utilizando OpenLibrary.org. Si el ISBN no es válido, debe rechazar la solicitud con un error 400.
+
+        c. Si el ISBN es válido (o está ausente), debe registrar el nuevo libro y devolver el libro creado con su ID asignado.
       operationId: addBook
       tags:
         - books
@@ -57,7 +60,8 @@ paths:
     get:
       summary: Devuelve un libro por ID
       description: |
-        a. Dado que el usuario envíe una solicitud GET a la ruta `/books/{id}`.  
+        a. Dado que el usuario envíe una solicitud GET a la ruta `/books/{id}`.
+
         b. Cuando el sistema recibe la solicitud, debe devolver el libro con el ID especificado (200 OK), o un error 404 si no existe.
       operationId: getBookById
       tags:
@@ -78,11 +82,15 @@ paths:
         '404':
           description: Libro no encontrado
 
+
+
     put:
       summary: Actualiza un libro existente por ID
       description: |
-        a. Dado que el usuario envíe una solicitud PUT con los nuevos datos del libro a la ruta `/books/{id}`.  
-        b. El sistema debe validar el ISBN utilizando OpenLibrary.org. Si el ISBN no es válido, debe rechazar la solicitud con un error 400.  
+        a. Dado que el usuario envíe una solicitud PUT con los nuevos datos del libro a la ruta `/books/{id}`.
+
+        b. El sistema debe validar el ISBN utilizando OpenLibrary.org. Si el ISBN no es válido, debe rechazar la solicitud con un error 400.
+
         c. Si el libro existe, debe actualizarlo y devolver el objeto actualizado, o un error 404 si no existe.
       operationId: updateBook
       tags:
@@ -114,7 +122,8 @@ paths:
     delete:
       summary: Elimina un libro por ID
       description: |
-        a. Dado que el usuario envíe una solicitud DELETE a la ruta `/books/{id}`.  
+        a. Dado que el usuario envíe una solicitud DELETE a la ruta `/books/{id}`.
+
         b. Cuando el sistema recibe la solicitud, debe eliminar el libro con el ID especificado y devolver un estado 204 si la eliminación fue exitosa, o un error 404 si el libro no existe.
       operationId: deleteBook
       tags:
@@ -131,8 +140,45 @@ paths:
         '404':
           description: Libro no encontrado
 
+  /books/search/{texto}:
+    get:
+      summary: Buscar libros por palabra
+      description: Devuelve libros cuyo titulo contienen esa palabra
+      operationId: getBooksearchText
+      tags:
+        - books
+      parameters:
+        - name: texto
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de libros que coinciden con el texto
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+
 components:
   schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        author:
+          type: string
+        isbn:
+          type: string
+          description: Debe ser un ISBN válido y existente en OpenLibrary (https://openlibrary.org)
+
     BookRequest:
       type: object
       required:
@@ -145,26 +191,4 @@ components:
           type: string
         isbn:
           type: string
-          description: Debe ser un ISBN válido y existente en OpenLibrary
-        year:
-          type: integer
-          description: Año de publicación
-
-    Book:
-      type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        author:
-          type: string
-        isbn:
-          type: string
-          description: Debe ser un ISBN válido y existente en OpenLibrary
-        year:
-          type: integer
-          description: Año de publicación
-        url:
-          type: string
-          description: URL de OpenLibrary para consultar el libro
+          description: Debe ser un ISBN válido y existente en OpenLibrary (https://openlibrary.org)

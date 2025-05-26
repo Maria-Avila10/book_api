@@ -11,6 +11,14 @@ Este proyecto es una **API RESTful de gestión de libros** creada con **Spring B
 
 ---
 
+##  Pre-requisitos
+
+- Java 17 o superior
+- Maven 3.6+
+- Conexión a Internet (para validar ISBN vía OpenLibrary)
+
+---
+
 ## Documentación de la API
 | Método | Endpoint       | Descripción                         |
 |--------|----------------|-------------------------------------|
@@ -20,13 +28,7 @@ Este proyecto es una **API RESTful de gestión de libros** creada con **Spring B
 | PUT    | `/books/{id}`  | Actualiza un libro existente por ID |
 | DELETE | `/books/{id}`  | Elimina un libro por ID             |
 
-##  Pre-requisitos
 
-- Java 17 o superior
-- Maven 3.6+
-- Conexión a Internet (para validar ISBN vía OpenLibrary)
-
----
 
 ##  Instalación y generación de código
 
