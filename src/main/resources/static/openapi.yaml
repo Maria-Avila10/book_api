@@ -37,7 +37,7 @@ paths:
         b. Cuando el sistema recibe la solicitud, debe validar el ISBN utilizando OpenLibrary.org. Si el ISBN no es válido, debe rechazar la solicitud con un error 400.
 
         c. Si el ISBN es válido (o está ausente), debe registrar el nuevo libro y devolver el libro creado con su ID asignado.
-      operationId: addBook
+      operationId: createBook
       tags:
         - books
       requestBody:
