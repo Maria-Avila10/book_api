@@ -6,11 +6,10 @@ import com.example.book_api.model.BookRequest;
 import org.mapstruct.Mapper;
 
 
+
 @Mapper(componentModel = "spring")
 public interface BookMapper {
+
     Book toDto(BookEntity entity);
-
-    BookEntity toEntity(Book dto);
-
     BookEntity toEntity(BookRequest dto);
 }

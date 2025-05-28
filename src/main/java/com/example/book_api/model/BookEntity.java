@@ -1,10 +1,10 @@
 package com.example.book_api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-// Importa anotaciones JPA (para mapear clases a tablas)
+
 import lombok.*;
 
 @Getter
@@ -12,13 +12,12 @@ import lombok.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "book") // Asocia esta entidad a la tabla llamada "book" en la base de datos
+@Table(name = "book")
 public class BookEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Genera el valor automáticamente
-    private Integer id;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private String title;
     private String author;
 

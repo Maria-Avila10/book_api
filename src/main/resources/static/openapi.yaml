@@ -178,6 +178,12 @@ components:
         isbn:
           type: string
           description: Debe ser un ISBN válido y existente en OpenLibrary (https://openlibrary.org)
+        publishedYear:
+          type: integer
+          description: Año de publicación del libro
+        url:
+          type: string
+          description: URL a OpenLibrary basada en el ISBN
 
     BookRequest:
       type: object
@@ -192,3 +198,5 @@ components:
         isbn:
           type: string
           description: Debe ser un ISBN válido y existente en OpenLibrary (https://openlibrary.org)
+        publishedYear:
+          type: integer
