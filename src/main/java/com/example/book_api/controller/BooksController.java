@@ -54,15 +54,9 @@ public class BooksController implements BooksApi {
 
     @Override
     public ResponseEntity<Book> createBook(@Valid @RequestBody BookRequest bookRequest) {
-        try {
-            BookEntity entity = mapper.toEntity(bookRequest);
-            BookEntity saved = bookService.createBook(entity);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(mapper.toDto(saved));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        BookEntity entity = mapper.toEntity(bookRequest);
+        BookEntity saved = bookService.createBook(entity);
+        return new ResponseEntity<>(mapper.toDto(saved), HttpStatus.CREATED);
     }
 
     @Override

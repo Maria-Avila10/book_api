@@ -187,9 +187,6 @@ components:
 
     BookRequest:
       type: object
-      required:
-        - title
-        - author
       properties:
         title:
           type: string
@@ -200,3 +197,7 @@ components:
           description: Debe ser un ISBN válido y existente en OpenLibrary (https://openlibrary.org)
         publishedYear:
           type: integer
+      required:
+            - title
+            - author
+            - isbn

@@ -1,10 +1,7 @@
+
 package com.example.book_api.model;
 
-
 import jakarta.persistence.*;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-
 import lombok.*;
 
 @Getter
@@ -16,11 +13,17 @@ import lombok.*;
 public class BookEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
+    @GeneratedValue(strategy =GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "title", nullable = false)
     private String title;
+
+    @Column(name = "author")
     private String author;
 
+    @Column(name = "isbn")
     private String isbn;
 
     @Column(name = "published_year")
@@ -28,5 +31,4 @@ public class BookEntity {
 
     @Column(name = "url")
     private String url;
-
 }
