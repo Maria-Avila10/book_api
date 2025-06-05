@@ -163,6 +163,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/Book'
 
+  /books/grouped-by-category:
+    get:
+      summary: Obtener libros agrupados por categoría
+      operationId: getBooksGroupedByCategory
+      tags:
+        - books
+      responses:
+        '200':
+          description: Libros agrupados por categoría
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Book'
 
 components:
   schemas:
@@ -184,6 +201,9 @@ components:
         url:
           type: string
           description: URL a OpenLibrary basada en el ISBN
+        category:
+          type: string
+          description: Categoría del libro extraída desde la API de Google Books
 
     BookRequest:
       type: object

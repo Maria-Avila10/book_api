@@ -21,17 +21,18 @@ public class BookService {
 
     public BookEntity createBook(BookEntity book) {
         if (book.getIsbn() != null && !book.getIsbn().isEmpty()) {
-            String apiUrl = "https://openlibrary.org/api/books?bibkeys=ISBN:" + book.getIsbn() + "&format=json&jscmd=data";
+            String openLibraryUrl = "https://openlibrary.org/api/books?bibkeys=ISBN:" + book.getIsbn() + "&format=json&jscmd=data";
+            String googleBooksUrl = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + book.getIsbn();
 
+            // Validar URL desde OpenLibrary
             try {
-                Map<String, Object> response = restTemplate.getForObject(apiUrl, Map.class);
-
-                if (response != null && !response.isEmpty()) {
+                Map<String, Object> olResponse = restTemplate.getForObject(openLibraryUrl, Map.class);
+                if (olResponse != null && !olResponse.isEmpty()) {
                     String key = "ISBN:" + book.getIsbn();
-                    Map<String, Object> bookData = (Map<String, Object>) response.get(key);
+                    Map<String, Object> bookData = (Map<String, Object>) olResponse.get(key);
 
                     if (bookData != null && bookData.get("url") != null) {
-                        String url = "https://openlibrary.org" + (String) bookData.get("url");
+                        String url = "https://openlibrary.org" + bookData.get("url").toString();
                         book.setUrl(url);
                     } else {
                         book.setUrl("URL no disponible");
@@ -40,12 +41,32 @@ public class BookService {
             } catch (Exception e) {
                 book.setUrl("URL no disponible");
             }
+
+            // Validar categoría desde Google Books
+            try {
+                Map<String, Object> gbResponse = restTemplate.getForObject(googleBooksUrl, Map.class);
+                if (gbResponse != null && gbResponse.containsKey("items")) {
+                    List<Map<String, Object>> items = (List<Map<String, Object>>) gbResponse.get("items");
+                    if (!items.isEmpty()) {
+                        Map<String, Object> volumeInfo = (Map<String, Object>) items.get(0).get("volumeInfo");
+                        if (volumeInfo != null && volumeInfo.containsKey("categories")) {
+                            List<String> categories = (List<String>) volumeInfo.get("categories");
+                            if (!categories.isEmpty()) {
+                                book.setCategory(categories.get(0));
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+
+            }
         } else {
             book.setUrl("ISBN no proporcionado");
         }
 
         return bookRepository.save(book);
     }
+
 
     public Optional<BookEntity> findBookById(Integer id) {
         return bookRepository.findById(id);
@@ -60,6 +81,7 @@ public class BookService {
             book.setIsbn(updatedBook.getIsbn());
             book.setPublishedYear(updatedBook.getPublishedYear());
             book.setUrl(updatedBook.getUrl());
+            book.setCategory(updatedBook.getCategory()); // <-- esta línea faltaba
             return bookRepository.save(book);
         } else {
             throw new RuntimeException("Libro no encontrado con ID: " + id);
@@ -80,6 +102,6 @@ public class BookService {
     }
 
     public List<BookEntity> searchBooks(String text) {
-        return bookRepository.findByTitleContainingIgnoreCase (text);
+        return bookRepository.findByTitleContainingIgnoreCaseOrCategoryContainingIgnoreCase(text, text);
     }
 }

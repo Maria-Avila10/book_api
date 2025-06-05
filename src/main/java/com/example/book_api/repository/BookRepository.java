@@ -9,7 +9,7 @@ import java.util.List;
 @Repository // Indica que esta interfaz es un componente de acceso a datos (DAO) gestionado por Spring
 public interface BookRepository extends JpaRepository<BookEntity, Integer> {
 
-    List<BookEntity> findByTitleContainingIgnoreCase(String title);
+    List<BookEntity> findByTitleContainingIgnoreCaseOrCategoryContainingIgnoreCase(String title, String category);
 
 
 }

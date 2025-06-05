@@ -1,6 +1,7 @@
 
 package com.example.book_api.model;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,8 @@ public class BookEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "title", nullable = false)
+
+    @Column(nullable = false)
     private String title;
 
     @Column(name = "author")
@@ -26,9 +28,13 @@ public class BookEntity {
     @Column(name = "isbn")
     private String isbn;
 
+
     @Column(name = "published_year")
     private Integer publishedYear;
 
     @Column(name = "url")
     private String url;
+
+    @Column(name = "category")
+    private String category;
 }
