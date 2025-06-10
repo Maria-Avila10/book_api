@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class BooksController implements BooksApi {
@@ -79,5 +81,16 @@ public class BooksController implements BooksApi {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+    @Override
+    public ResponseEntity<Map<String, List<Book>>> getBooksByCategory() {
+        List<BookEntity> bookEntities = bookService.findAllBooks();
+
+        // Mapear y agrupar por categoría
+        Map<String, List<Book>> groupedBooks = bookEntities.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.groupingBy(Book::getCategory));
+
+        return ResponseEntity.ok(groupedBooks);
     }
 }

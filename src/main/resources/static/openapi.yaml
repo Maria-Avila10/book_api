@@ -166,7 +166,7 @@ paths:
   /books/grouped-by-category:
     get:
       summary: Obtener libros agrupados por categoría
-      operationId: getBooksGroupedByCategory
+      operationId: getBooksByCategory
       tags:
         - books
       responses:
