@@ -81,7 +81,7 @@ public class BookService {
             book.setIsbn(updatedBook.getIsbn());
             book.setPublishedYear(updatedBook.getPublishedYear());
             book.setUrl(updatedBook.getUrl());
-            book.setCategory(updatedBook.getCategory()); // <-- esta línea faltaba
+            book.setCategory(updatedBook.getCategory()); 
             return bookRepository.save(book);
         } else {
             throw new RuntimeException("Libro no encontrado con ID: " + id);
