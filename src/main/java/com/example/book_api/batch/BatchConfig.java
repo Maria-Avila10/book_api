@@ -28,7 +28,7 @@ public class BatchConfig {
     private final PlatformTransactionManager transactionManager;
     private final BookRepository bookRepository;
 
-    // Constructor con inyección de dependencias
+
     public BatchConfig(JobRepository jobRepository,
                        PlatformTransactionManager transactionManager,
                        BookRepository bookRepository) {
@@ -49,22 +49,22 @@ public class BatchConfig {
     public Step processBookStep() {
         // Define el Step que leerá, procesará y escribirá objetos BookEntity
         return new StepBuilder("processBookStep", jobRepository)
-                .<BookEntity, BookEntity>chunk(10, transactionManager) // Procesa los datos en bloques de 10
+                .<BookEntity, BookEntity>chunk(10, transactionManager)
                 .reader(bookItemReader())
                 .processor(bookItemProcessor())
-                .writer(bookItemWriter()) // Escritor: guarda los libros procesados
+                .writer(bookItemWriter())
                 .build();
     }
 
     @Bean
     public FlatFileItemReader<BookEntity> bookItemReader() {
         FlatFileItemReader<BookEntity> reader = new FlatFileItemReader<>();
-        reader.setResource(new ClassPathResource("import_books.csv")); // archivo dentro de resources
+        reader.setResource(new ClassPathResource("import_books.csv"));
         reader.setLinesToSkip(1);
 
         DefaultLineMapper<BookEntity> lineMapper = new DefaultLineMapper<>();
         DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
-        tokenizer.setNames("title", "author", "isbn", "publishedYear", "url"); // nombres de los atributos
+        tokenizer.setNames("title", "author", "isbn", "publishedYear", "url", "category");
 
         BeanWrapperFieldSetMapper<BookEntity> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
         fieldSetMapper.setTargetType(BookEntity.class);
@@ -78,19 +78,16 @@ public class BatchConfig {
 
     @Bean
     public ItemProcessor<BookEntity, BookEntity> bookItemProcessor() {
-        // Procesa cada libro validando que tenga un ISBN
         return book -> {
             if (book.getIsbn() == null || book.getIsbn().isEmpty()) {
-                // Lanza error si no hay ISBN
                 throw new IllegalArgumentException("El ISBN no puede estar vacío.");
             }
-            return book; // Si es válido, lo devuelve sin cambios
+            return book;
         };
     }
 
     @Bean
     public ItemWriter<BookEntity> bookItemWriter() {
-        // Guarda la lista de libros procesados en la base de datos
-        return  books -> bookRepository.saveAll(books); // Escritura en lote
+        return  books -> bookRepository.saveAll(books);
     }
 }

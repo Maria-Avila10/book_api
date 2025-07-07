@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository // Indica que esta interfaz es un componente de acceso a datos (DAO) gestionado por Spring
+@Repository
 public interface BookRepository extends JpaRepository<BookEntity, Integer> {
 
     List<BookEntity> findByTitleContainingIgnoreCaseOrCategoryContainingIgnoreCase(String title, String category);

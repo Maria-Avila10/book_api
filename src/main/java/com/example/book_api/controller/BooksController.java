@@ -86,7 +86,7 @@ public class BooksController implements BooksApi {
     public ResponseEntity<Map<String, List<Book>>> getBooksByCategory() {
         List<BookEntity> bookEntities = bookService.findAllBooks();
 
-        // Mapear y agrupar por categoría
+
         Map<String, List<Book>> groupedBooks = bookEntities.stream()
                 .map(mapper::toDto)
                 .collect(Collectors.groupingBy(Book::getCategory));

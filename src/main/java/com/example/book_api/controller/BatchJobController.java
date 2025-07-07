@@ -12,22 +12,21 @@ public class BatchJobController {
     private final JobLauncher jobLauncher;
 
     private final Job importBookJob;
-    // Constructor con inyección de dependencias
+
     public BatchJobController(JobLauncher jobLauncher, Job importBookJob) {
         this.jobLauncher = jobLauncher;
         this.importBookJob = importBookJob;
     }
 
-    @GetMapping("/start-batch") // Crea un endpoint HTTP GET para lanzar el batch
+    @GetMapping("/start-batch")
     public String startBatchJob() {
         try {
-            // Lanza el job con parámetros (en este caso, un timestamp único)
             jobLauncher.run(importBookJob, new JobParametersBuilder()
-                    .addLong("startAt", System.currentTimeMillis()) // Evita errores por ejecución duplicada
+                    .addLong("startAt", System.currentTimeMillis())
                     .toJobParameters());
             return "¡Batch Job iniciado correctamente!";
         } catch (Exception e) {
-            e.printStackTrace(); // Muestra el error en consola si falla
+            e.printStackTrace();
             return "Error al iniciar el Batch Job: " + e.getMessage();
         }
     }

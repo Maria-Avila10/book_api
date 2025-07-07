@@ -7,16 +7,17 @@ import lombok.*;
 
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(name = "book")
 public class BookEntity {
 
     @Id
     @GeneratedValue(strategy =GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private int id;
+
 
 
     @Column(nullable = false)
@@ -29,7 +30,7 @@ public class BookEntity {
     private String isbn;
 
 
-    @Column(name = "published_year")
+    @Column(name = "publishedYear")
     private Integer publishedYear;
 
     @Column(name = "url")

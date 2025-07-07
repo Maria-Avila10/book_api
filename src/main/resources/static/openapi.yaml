@@ -208,14 +208,14 @@ components:
     BookRequest:
       type: object
       properties:
-        title:
+        titleRq:
           type: string
-        author:
+        authorRq:
           type: string
-        isbn:
+        isbnRq:
           type: string
           description: Debe ser un ISBN válido y existente en OpenLibrary (https://openlibrary.org)
-        publishedYear:
+        publishedYearRq:
           type: integer
       required:
             - title

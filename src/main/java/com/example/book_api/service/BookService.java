@@ -1,5 +1,7 @@
 package com.example.book_api.service;
 
+import com.example.book_api.client.GoogleBooksClient;
+import com.example.book_api.client.OpenLibraryClient;
 import com.example.book_api.model.BookEntity;
 import com.example.book_api.repository.BookRepository;
 import org.springframework.stereotype.Service;
@@ -13,22 +15,29 @@ import java.util.Optional;
 public class BookService {
 
     private final BookRepository bookRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final OpenLibraryClient openLibraryClient;
+    private final GoogleBooksClient googleBooksClient;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository,
+                       OpenLibraryClient openLibraryClient,
+                       GoogleBooksClient googleBooksClient) {
         this.bookRepository = bookRepository;
+        this.openLibraryClient = openLibraryClient;
+        this.googleBooksClient = googleBooksClient;
+
+
     }
 
     public BookEntity createBook(BookEntity book) {
         if (book.getIsbn() != null && !book.getIsbn().isEmpty()) {
-            String openLibraryUrl = "https://openlibrary.org/api/books?bibkeys=ISBN:" + book.getIsbn() + "&format=json&jscmd=data";
-            String googleBooksUrl = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + book.getIsbn();
+            String key = "ISBN:" + book.getIsbn();
 
-            // Validar URL desde OpenLibrary
+            // Obtener URL desde OpenLibrary
             try {
-                Map<String, Object> olResponse = restTemplate.getForObject(openLibraryUrl, Map.class);
+                Map<String, Object> olResponse = openLibraryClient.buscarLibro(
+                        key, "json", "data");
+
                 if (olResponse != null && !olResponse.isEmpty()) {
-                    String key = "ISBN:" + book.getIsbn();
                     Map<String, Object> bookData = (Map<String, Object>) olResponse.get(key);
 
                     if (bookData != null && bookData.get("url") != null) {
@@ -42,9 +51,10 @@ public class BookService {
                 book.setUrl("URL no disponible");
             }
 
-            // Validar categoría desde Google Books
+            // Obtener categoría desde Google Books
             try {
-                Map<String, Object> gbResponse = restTemplate.getForObject(googleBooksUrl, Map.class);
+                Map<String, Object> gbResponse = googleBooksClient.buscarPorIsbn("isbn:" + book.getIsbn());
+
                 if (gbResponse != null && gbResponse.containsKey("items")) {
                     List<Map<String, Object>> items = (List<Map<String, Object>>) gbResponse.get("items");
                     if (!items.isEmpty()) {
@@ -58,7 +68,7 @@ public class BookService {
                     }
                 }
             } catch (Exception e) {
-
+                // no hacer nada
             }
         } else {
             book.setUrl("ISBN no proporcionado");
