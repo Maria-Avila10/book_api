@@ -6,6 +6,7 @@ import com.example.book_api.model.Book;
 import com.example.book_api.model.BookEntity;
 import com.example.book_api.model.BookRequest;
 import com.example.book_api.service.BookService;
+import com.example.book_api.service.IBookService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +20,13 @@ import java.util.stream.Collectors;
 @RestController
 public class BooksController implements BooksApi {
 
-    private final BookService bookService;
+    private final IBookService bookService;
     private final BookMapper mapper;
 
-    public BooksController(BookService bookService, BookMapper mapper) {
+    public BooksController (IBookService bookService, BookMapper mapper) {
         this.bookService = bookService;
         this.mapper = mapper;
     }
-
 
     @Override
     public ResponseEntity<List<Book>> getAllBooks() {

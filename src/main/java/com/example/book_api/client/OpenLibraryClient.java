@@ -12,7 +12,7 @@ public interface OpenLibraryClient {
 
     @GetMapping("/api/books")
     Map<String, Object> buscarLibro(
-            @RequestParam("keys") String keys,
+            @RequestParam("bibkeys") String bibkeys,
             @RequestParam("format") String format,
             @RequestParam("jscmd") String jscmd
     );

@@ -37,7 +37,6 @@ class BooksControllerTest {
     private Book bookResponse;
 
 
-
     @BeforeEach
     void setUp() {
         bookRequest = new BookRequest();
@@ -53,7 +52,7 @@ class BooksControllerTest {
         bookEntity.setIsbn("9780261102217");
         bookEntity.setPublishedYear(1937);
         bookEntity.setUrl("https://openlibrary.org");
-        bookEntity.setCategory("Ficcion");
+        bookEntity.setCategory("Fiction");
 
         bookResponse = new Book();
         bookResponse.setId(1);
@@ -63,8 +62,6 @@ class BooksControllerTest {
         bookResponse.setPublishedYear(1937);
         bookResponse.setUrl("https://openlibrary.org");
         bookResponse.setCategory("Fiction");
-
-
     }
 
     @Test
@@ -76,7 +73,6 @@ class BooksControllerTest {
 
         //act
         ResponseEntity<Book> response = booksController.createBook(bookRequest);
-
 
         // assert (Verificar)
         assertNotNull(response);
@@ -91,7 +87,5 @@ class BooksControllerTest {
         assertEquals(1937, createdBook.getPublishedYear());
         assertEquals("https://openlibrary.org", createdBook.getUrl());
         assertEquals("Fiction", createdBook.getCategory());
-
-
     }
 }
