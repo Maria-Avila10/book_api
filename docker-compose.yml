@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:17
+    container_name: pgdb
+    ports:
+      - "5433:5432"          # <— Puerto host 5433 → puerto interno 5432
+    environment:
+      POSTGRES_DB: bookdb
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: supersegura123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pgdata:
